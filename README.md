@@ -1,12 +1,27 @@
 # cryptofetch
 A short Python script fetching cryptocurrency rates from Coinbase meant to be used with Polybar
 
-# Usage
-Get your API key and secret from [Coinbase](https://www.coinbase.com/settings/api) and place the `coins.svg` file in `~/.config/polybar/` or specify the path with 
-`--coin-unicode-map <path/to/coins.svg>`
+# Setup
+Get your API key and secret from 
+[Coinbase](https://www.coinbase.com/settings/api) and place the `coins.svg` 
+file in `~/.config/polybar/` or specify the path with `--coin-unicode-map 
+<path/to/coins.svg>` and place the `coins.otf` file in `~/.fonts`.
 
+# Usage
+```shell
+cryptofetch.py --coin ETH --base USD --api-key <API_KEY> --api-secret 
+<API_SECRET>
 ```
-cryptofetch.py --coin ETH --base USD --api-key <API_KEY> --api-secret <api_secret>
+
+## Polybar
+If you want to use this with Polybar, add a module
+```ini
+[module/crypto]
+type = custom/script
+format = <label>
+exec = path/to/cryptofetch.py --coin <COIN> --base USD ...
+; Keep in mind the cache expiry is set to 60 seconds by default anyway
+interval = 30
 ```
 
 # Credit

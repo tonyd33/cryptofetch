@@ -6,6 +6,8 @@ import json
 import os
 import sys
 import time
+import logging
+from logging import INFO, DEBUG
 
 DEFAULT_CACHE_LOCATION = "/tmp/cryptofetch_cache.json"
 DEFAULT_CACHE_EXPIRY_SECONDS = 60
@@ -44,11 +46,6 @@ def load_unicode_map(path):
             unicode, coin = line.strip().split(":")
             unicode_map[coin] = unicode
     return unicode_map
-
-
-def log(message, verbose):
-    if verbose:
-        sys.stdout.write(f"{message}\n")
 
 
 def main():
@@ -110,13 +107,15 @@ def main():
     verbose = args.verbose
     no_cache = args.no_cache
     coin_unicode_map_path = args.coin_unicode_map
+    logging.basicConfig(level=DEBUG if verbose else INFO)
 
     now_time = int(time.time())
 
     cache_data = {}
     if os.path.exists(cache_location):
-        log(f"Cache found at {cache_location}", verbose)
-        cache_data = json.load(open(cache_location, "r"))
+        logging.debug(f"Cache found at {cache_location}")
+        with open(cache_location, "r") as cache:
+            cache_data = json.load(cache)
 
     cache_timestamp = cache_data.get("timestamp", 0)
 
@@ -124,13 +123,12 @@ def main():
     try:
         unicode_map = load_unicode_map(coin_unicode_map_path)
     except FileNotFoundError:
-        log("Coins map wasn't found, ignoring...", verbose)
+        logging.debug("Coins map wasn't found, ignoring...")
 
     # If the cache hasn't expired yet, then try to read from the cache
     if now_time - cache_timestamp < cache_expiry_seconds and not no_cache:
-        log(
+        logging.debug(
             f"Cache has timestamp {cache_timestamp}, trying to read from it",
-            verbose,
         )
         rate = retrieve_rate_from_data(
             data=cache_data,
@@ -144,18 +142,19 @@ def main():
             sys.stdout.write(rate)
             sys.exit(0)
 
-    log("Cache expired or forced no cache, making API call", verbose)
+    logging.debug("Cache expired or forced no cache, making API call")
     # Otherwise, make the Coinbase API call
     client = Client(api_key, api_secret)
     data = client.get_exchange_rates()
 
     # Set timestamp
     data["timestamp"] = now_time
-    json.dump(
-        data,
-        open(cache_location, "w"),
-        indent=4,
-    )
+    with open(cache_location, "w") as cache:
+        json.dump(
+            data,
+            cache,
+            indent=4,
+        )
     rate = retrieve_rate_from_data(
         data=data,
         coin=coin,
@@ -172,4 +171,7 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except Exception as e:
+        logging.error(f'cryptofetch script fail\n{e}')
