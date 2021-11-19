@@ -23,6 +23,8 @@ exec = path/to/cryptofetch.py --coin <COIN> --base USD ...
 ; Keep in mind the cache expiry is set to 60 seconds by default anyway
 interval = 30
 ```
+### Screenshots
+![image](https://user-images.githubusercontent.com/22553678/142580339-64244e7e-d73b-4ee8-9a66-eb0e793bf1fd.png)
 
 # Credit
 Credit to [polybar-cryptocurrency](https://github.com/plinki/polybar-cryptocurrency) for the coin icons
